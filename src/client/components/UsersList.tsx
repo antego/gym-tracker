@@ -37,7 +37,7 @@ export class UsersList extends React.Component<any, IState> {
             <CardHeader title='Users List' />
             <CardContent>
               <List>
-                {this.state.users.map(user => (
+                {this.state.users.map((user) => (
                   <ListItem key={user.userId}>
                     <NavLink to={`/fetch-example/${user.userId}`}>{getUserFullName(user)}</NavLink>
                   </ListItem>
@@ -50,7 +50,7 @@ export class UsersList extends React.Component<any, IState> {
           <Route
             exact
             path='/fetch-example/:userId'
-            render={props => <User user={this.getUserById(props.match.params.userId)} />}
+            render={(props) => <User user={this.getUserById(props.match.params.userId)} />}
           />
         </Grid>
       </>
@@ -63,6 +63,6 @@ export class UsersList extends React.Component<any, IState> {
   }
 
   private getUserById(userId) {
-    return this.state.users.find(u => u.userId === userId);
+    return this.state.users.find((u) => u.userId === userId);
   }
 }

@@ -10,6 +10,7 @@ import { LazyLoadingExample } from './components/LazyLoadingExample';
 import { RouterExample } from './components/RouterExample';
 import { StyledComponentsExample } from './components/StyledComponentsExample';
 import { UsersList } from './components/UsersList';
+import { Workout } from './components/Workout';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -42,6 +43,7 @@ export const App = () => {
             <Route path='/lazy-example' component={LazyLoadingExample} />
             <Route path='/styled-example' component={StyledComponentsExample} />
             <Route path='/router-example/:slug' component={RouterExample} />
+            <Route path='/workout' component={Workout} />
           </Switch>
         </main>
       </div>

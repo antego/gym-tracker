@@ -5,7 +5,7 @@ import { IS_DEV, WEBPACK_PORT } from '../config';
 
 export function staticsRouter() {
   const router = Router();
-  
+
   if (IS_DEV) {
     const { createProxyMiddleware } = require('http-proxy-middleware');
     // eslint-disable-next-line @typescript-eslint/no-var-requires

@@ -5,14 +5,14 @@ const FIND_WORKOUTS = gql`
   query FindWorkouts {
     workouts {
       id
+      date
       exercises {
+        name
         sets {
           reps
           weight
         }
-        name
       }
-      date
     }
   }
 `;
@@ -23,13 +23,16 @@ export const Workouts: React.FunctionComponent = () => {
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error :(</p>;
 
-  return data.workouts.map((w) => (
-    <div key={w.id}>
-      <div>
-        {w.exercises.map((ex) => (
-          <p key={ex.name}>{ex.name}</p>
-        ))}
+  return data.workouts.map((w) => {
+    return (
+      <div key={w.id}>
+        {new Date(w.date).toISOString()}
+        <div>
+          {w.exercises.map((ex) => (
+            <p key={ex.name}>{ex.name}</p>
+          ))}
+        </div>
       </div>
-    </div>
-  ));
+    );
+  });
 };

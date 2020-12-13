@@ -65,13 +65,18 @@
     }
   },
   "dependencies": {
+    "@apollo/client": "^3.3.6",
     "@material-ui/icons": "^4.9.1",
+    "apollo-server-express": "^2.19.0",
     "axios": "^0.20.0",
     "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",
     "ejs": "^3.1.5",
     "express": "^4.17.1",
     "find-up": "^4.1.0",
+    "graphql": "^15.4.0",
+    "sqlite": "^4.0.18",
+    "sqlite3": "^5.0.0",
     "styled-components": "^5.2.0",
     "tslib": "^2.0.1"
   },

@@ -10,7 +10,9 @@ import { LazyLoadingExample } from './components/LazyLoadingExample';
 import { RouterExample } from './components/RouterExample';
 import { StyledComponentsExample } from './components/StyledComponentsExample';
 import { UsersList } from './components/UsersList';
-import { Workout } from './components/Workout';
+import { Workouts } from './components/Workouts';
+import { ApolloProvider } from '@apollo/client';
+import { ApolloClient, InMemoryCache } from '@apollo/client';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -25,28 +27,35 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
+const client = new ApolloClient({
+  uri: '/data',
+  cache: new InMemoryCache(),
+});
+
 export const App = () => {
   const classes = useStyles({});
 
   return (
-    <BrowserRouter>
-      <div className={classes.root}>
-        <CssBaseline />
-        <Header />
-        <SideMenu />
-        <main className={classes.main}>
-          <div className={classes.toolbar} />
-          <Switch>
-            <Route exact path='/' component={Home} />
-            <Route exact path='/usage' component={Usage} />
-            <Route path='/fetch-example' component={UsersList} />
-            <Route path='/lazy-example' component={LazyLoadingExample} />
-            <Route path='/styled-example' component={StyledComponentsExample} />
-            <Route path='/router-example/:slug' component={RouterExample} />
-            <Route path='/workout' component={Workout} />
-          </Switch>
-        </main>
-      </div>
-    </BrowserRouter>
+    <ApolloProvider client={client}>
+      <BrowserRouter>
+        <div className={classes.root}>
+          <CssBaseline />
+          <Header />
+          <SideMenu />
+          <main className={classes.main}>
+            <div className={classes.toolbar} />
+            <Switch>
+              <Route exact path='/' component={Home} />
+              <Route exact path='/usage' component={Usage} />
+              <Route path='/fetch-example' component={UsersList} />
+              <Route path='/lazy-example' component={LazyLoadingExample} />
+              <Route path='/styled-example' component={StyledComponentsExample} />
+              <Route path='/router-example/:slug' component={RouterExample} />
+              <Route path='/workouts' component={Workouts} />
+            </Switch>
+          </main>
+        </div>
+      </BrowserRouter>
+    </ApolloProvider>
   );
 };

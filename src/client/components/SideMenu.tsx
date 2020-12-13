@@ -82,11 +82,11 @@ export const SideMenu: React.FunctionComponent = () => {
           </ListItemIcon>
           <ListItemText primary='React-Router' />
         </ListItem>
-        <ListItem button component={NavLinkMui} to='/workout'>
+        <ListItem button component={NavLinkMui} to='/workouts'>
           <ListItemIcon>
             <RouterIcon />
           </ListItemIcon>
-          <ListItemText primary='Workout' />
+          <ListItemText primary='Workouts' />
         </ListItem>
       </List>
     </Drawer>

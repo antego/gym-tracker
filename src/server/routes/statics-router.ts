@@ -7,8 +7,8 @@ export function staticsRouter() {
   const router = Router();
 
   if (IS_DEV) {
-    const { createProxyMiddleware } = require('http-proxy-middleware');
     // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { createProxyMiddleware } = require('http-proxy-middleware');
     // All the assets are hosted by Webpack on localhost:${config.WEBPACK_PORT} (Webpack-dev-server)
     router.use(
       '/statics',

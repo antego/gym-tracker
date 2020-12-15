@@ -49,6 +49,7 @@ const typeDefs = gql`
   # case, the "books" query returns an array of zero or more Books (defined above).
   type Query {
     workouts: [Workout]!
+    workout(id: ID!): Workout
     books: [Book]
   }
 `;
@@ -122,6 +123,20 @@ const resolvers = {
         workout.id = result.rowid;
         return workout;
       });
+    },
+    workout: async (parent, args, context) => {
+      const db: Database<sqlite3.Database, sqlite3.Statement> = context.db;
+      const results = await db.all<{ rowid: number; data: string }[]>(
+        'SELECT rowid, data FROM workout where rowid = ?',
+        args.id,
+      );
+      if (results.length != 0) {
+        const result = results[0];
+        const workout = JSON.parse(result.data);
+        workout.id = result.rowid;
+        return workout;
+      }
+      return null;
     },
   },
 };

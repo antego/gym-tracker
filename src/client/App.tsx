@@ -11,6 +11,7 @@ import { RouterExample } from './components/RouterExample';
 import { StyledComponentsExample } from './components/StyledComponentsExample';
 import { UsersList } from './components/UsersList';
 import { Workouts } from './components/Workouts';
+import { Workout } from './components/Workout';
 import { ApolloProvider } from '@apollo/client';
 import { ApolloClient, InMemoryCache } from '@apollo/client';
 
@@ -52,6 +53,7 @@ export const App = () => {
               <Route path='/styled-example' component={StyledComponentsExample} />
               <Route path='/router-example/:slug' component={RouterExample} />
               <Route path='/workouts' component={Workouts} />
+              <Route path='/workout/:id' component={Workout} />
             </Switch>
           </main>
         </div>

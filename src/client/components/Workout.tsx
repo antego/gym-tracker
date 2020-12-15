@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Set from './Set';
+import { useParams } from 'react-router-dom';
+import { gql, useApolloClient } from '@apollo/client';
 
 interface ExerciseState {
   sets: Map<number, SetState>;
@@ -15,13 +17,60 @@ interface SetState {
 interface WorkoutState {
   exercises: Map<number, ExerciseState>;
   nextExerciseId: number;
+  date: number;
+}
+
+const GET_WORKOUT = gql`
+  query GetWorkout($id: ID!) {
+    workout(id: $id) {
+      id
+      date
+      exercises {
+        name
+        sets {
+          reps
+          weight
+        }
+      }
+    }
+  }
+`;
+
+function mapWorkout(workout: any): WorkoutState {
+  let nextExerciseId = 0;
+  const exercises: Map<number, ExerciseState> = workout.exercises.reduce((map, e) => {
+    let nextSetId = 0;
+    const sets: Map<number, SetState> = e.sets.reduce((map, s) => {
+      map[nextSetId++] = {
+        reps: s.reps,
+        weight: s.weight,
+      };
+      return map;
+    }, new Map());
+    map[nextExerciseId++] = {
+      sets,
+      nextSetId,
+      name: e.name,
+    };
+    return map;
+  }, new Map());
+  return {
+    date: workout.date,
+    exercises,
+    nextExerciseId,
+  };
 }
 
 export const Workout: React.FunctionComponent = () => {
-  const [state, setState] = useState<WorkoutState>({
-    exercises: new Map(),
-    nextExerciseId: 0,
-  });
+  const { id } = useParams<{ id: string }>();
+  const client = useApolloClient();
+
+  const [state, setState] = useState<WorkoutState>({ exercises: new Map(), nextExerciseId: 0, date: 0 });
+  useEffect(() => {
+    client.query({ query: GET_WORKOUT, variables: { id } }).then((res) => {
+      setState(mapWorkout(res.data.workout));
+    });
+  }, []);
 
   const appendSet = (k: number) => {
     return () => {
@@ -95,4 +144,4 @@ export const Workout: React.FunctionComponent = () => {
       <button onClick={appendExercise}>Append exercise</button>
     </div>
   );
-}
+};

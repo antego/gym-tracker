@@ -23,7 +23,7 @@ const typeDefs = gql`
   # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
 
   type Set {
-    weight: Int
+    weight: Int!
     reps: Int!
   }
 
@@ -83,6 +83,7 @@ const workouts = [
         sets: [
           {
             reps: 10,
+            weight: 0,
           },
         ],
       },
@@ -105,6 +106,7 @@ const workouts = [
         sets: [
           {
             reps: 10,
+            weight: 0,
           },
         ],
       },

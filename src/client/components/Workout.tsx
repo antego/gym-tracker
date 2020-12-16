@@ -40,18 +40,18 @@ function mapWorkout(workout: any): WorkoutState {
   let nextExerciseId = 0;
   const exercises: Map<number, ExerciseState> = workout.exercises.reduce((map, e) => {
     let nextSetId = 0;
-    const sets: Map<number, SetState> = e.sets.reduce((map, s) => {
-      map[nextSetId++] = {
+    const sets: Map<number, SetState> = e.sets.reduce((map1, s) => {
+      map1.set(nextSetId++, {
         reps: s.reps,
         weight: s.weight,
-      };
-      return map;
+      });
+      return map1;
     }, new Map());
-    map[nextExerciseId++] = {
+    map.set(nextExerciseId++, {
       sets,
       nextSetId,
       name: e.name,
-    };
+    });
     return map;
   }, new Map());
   return {
@@ -67,8 +67,8 @@ export const Workout: React.FunctionComponent = () => {
 
   const [state, setState] = useState<WorkoutState>({ exercises: new Map(), nextExerciseId: 0, date: 0 });
   useEffect(() => {
-    client.query({ query: GET_WORKOUT, variables: { id } }).then((res) => {
-      setState(mapWorkout(res.data.workout));
+    client.query({ query: GET_WORKOUT, variables: { id } }).then(({ data }) => {
+      setState(mapWorkout(data.workout));
     });
   }, []);
 

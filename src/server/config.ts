@@ -17,5 +17,6 @@ const { version: VERSION } = PackageJson;
 // server
 const SERVER_PORT = process.env.PORT || 3000;
 const WEBPACK_PORT = 8085; // For dev environment only
+const POSTGRES_URL = process.env.DATABASE_URL;
 
-export { IS_DEV, VERSION, SERVER_PORT, WEBPACK_PORT };
+export { IS_DEV, VERSION, SERVER_PORT, WEBPACK_PORT, POSTGRES_URL };

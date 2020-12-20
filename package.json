@@ -75,6 +75,7 @@
     "express": "^4.17.1",
     "find-up": "^4.1.0",
     "graphql": "^15.4.0",
+    "pg": "^8.5.1",
     "sqlite": "^4.0.18",
     "sqlite3": "^5.0.0",
     "styled-components": "^5.2.0",

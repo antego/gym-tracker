@@ -5,8 +5,7 @@ import { pagesRouter } from './routes/pages-router';
 import { staticsRouter } from './routes/statics-router';
 import * as config from './config';
 import { ApolloServer, gql } from 'apollo-server-express';
-import sqlite3 from 'sqlite3';
-import { Database, open } from 'sqlite';
+import { Client } from 'pg';
 
 console.log(`*******************************************`);
 console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
@@ -119,24 +118,21 @@ const workouts = [
 const resolvers = {
   Query: {
     workouts: async (parent, args, context) => {
-      const db: Database<sqlite3.Database, sqlite3.Statement> = context.db;
-      const results = await db.all<{ rowid: number; data: string }[]>('SELECT rowid, data FROM workout limit 10');
-      return results.map((result) => {
-        const workout = JSON.parse(result.data);
-        workout.id = result.rowid;
+      const db = context.db;
+      const results = await db.query('SELECT id, data FROM workout limit 10');
+      return results.rows.map((result) => {
+        const workout = result.data;
+        workout.id = result.id;
         return workout;
       });
     },
     workout: async (parent, args, context) => {
-      const db: Database<sqlite3.Database, sqlite3.Statement> = context.db;
-      const results = await db.all<{ rowid: number; data: string }[]>(
-        'SELECT rowid, data FROM workout where rowid = ?',
-        args.id,
-      );
+      const db = context.db;
+      const results = await db.query('SELECT id, data FROM workout where id = $1', [args.id]);
       if (results.length != 0) {
-        const result = results[0];
-        const workout = JSON.parse(result.data);
-        workout.id = result.rowid;
+        const result = results.rows[0];
+        const workout = result.data;
+        workout.id = result.id;
         return workout;
       }
       return null;
@@ -144,22 +140,21 @@ const resolvers = {
   },
   Mutation: {
     updateWorkout: async (parent, args, context) => {
-      const db: Database<sqlite3.Database, sqlite3.Statement> = context.db;
+      const db = context.db;
       const date = Math.floor(Date.now() / 1000);
       const workout = args.workout;
       workout.date = date;
-      await db.run('UPDATE workout set data = json(?) where rowid = ?', JSON.stringify(workout), workout.id);
+      await db.query('UPDATE workout set data = $1 where id = $2', [workout, workout.id]);
     },
     createWorkout: async (parent, args, context) => {
-      const db: Database<sqlite3.Database, sqlite3.Statement> = context.db;
+      const db = context.db;
       const date = Math.floor(Date.now() / 1000);
       const workout = {
         date,
         exercises: [],
       };
-      await db.run('insert into workout values (json(?));', JSON.stringify(workout));
-      const results = await db.all<{ rowid: number; data: string }[]>('SELECT last_insert_rowid() as rowid;');
-      return { ...workout, id: results[0].rowid };
+      const results = await db.query('insert into workout(data) values ($1) RETURNING id;', [workout]);
+      return { ...workout, id: results.rows[0].id };
     },
   },
 };
@@ -167,20 +162,26 @@ const resolvers = {
 // open the database
 (async () => {
   // open the database
-  const db = await open({
-    filename: ':memory:',
-    driver: sqlite3.Database,
+  const client = new Client({
+    connectionString: config.POSTGRES_URL,
+    ssl: config.IS_DEV
+      ? false
+      : {
+          rejectUnauthorized: false,
+        },
   });
 
-  await db.exec('CREATE TABLE if not exists workout (data TEXT)');
+  client.connect();
+
+  await client.query('CREATE TABLE if not exists workout (id SERIAL, data json)');
   workouts.forEach(async (val) => {
-    await db.run('INSERT INTO workout VALUES (json(?))', JSON.stringify(val));
+    await client.query('INSERT INTO workout(data) VALUES ($1)', [val]);
   });
 
   const server = new ApolloServer({
     typeDefs,
     resolvers,
-    context: { db },
+    context: { db: client },
   });
 
   server.applyMiddleware({ app, path: '/data' });

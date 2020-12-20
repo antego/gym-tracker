@@ -38,10 +38,19 @@ const typeDefs = gql`
     exercises: [Exercise!]!
   }
 
-  # This "Book" type defines the queryable fields for every book in our data source.
-  type Book {
-    title: String
-    author: String
+  input SetInput {
+    weight: Int!
+    reps: Int!
+  }
+
+  input ExerciseInput {
+    sets: [SetInput!]!
+    name: String!
+  }
+
+  input WorkoutInput {
+    id: String!
+    exercises: [ExerciseInput!]!
   }
 
   # The "Query" type is special: it lists all of the available queries that
@@ -49,21 +58,14 @@ const typeDefs = gql`
   # case, the "books" query returns an array of zero or more Books (defined above).
   type Query {
     workouts: [Workout]!
-    workout(id: ID!): Workout
-    books: [Book]
+    workout(id: String!): Workout
+  }
+
+  type Mutation {
+    updateWorkout(workout: WorkoutInput!): Boolean
+    createWorkout: Workout!
   }
 `;
-
-const books = [
-  {
-    title: 'The Awakening',
-    author: 'Kate Chopin',
-  },
-  {
-    title: 'City of Glass',
-    author: 'Paul Auster',
-  },
-];
 
 const workouts = [
   {
@@ -116,7 +118,6 @@ const workouts = [
 
 const resolvers = {
   Query: {
-    books: () => books,
     workouts: async (parent, args, context) => {
       const db: Database<sqlite3.Database, sqlite3.Statement> = context.db;
       const results = await db.all<{ rowid: number; data: string }[]>('SELECT rowid, data FROM workout limit 10');
@@ -139,6 +140,26 @@ const resolvers = {
         return workout;
       }
       return null;
+    },
+  },
+  Mutation: {
+    updateWorkout: async (parent, args, context) => {
+      const db: Database<sqlite3.Database, sqlite3.Statement> = context.db;
+      const date = Math.floor(Date.now() / 1000);
+      const workout = args.workout;
+      workout.date = date;
+      await db.run('UPDATE workout set data = json(?) where rowid = ?', JSON.stringify(workout), workout.id);
+    },
+    createWorkout: async (parent, args, context) => {
+      const db: Database<sqlite3.Database, sqlite3.Statement> = context.db;
+      const date = Math.floor(Date.now() / 1000);
+      const workout = {
+        date,
+        exercises: [],
+      };
+      await db.run('insert into workout values (json(?));', JSON.stringify(workout));
+      const results = await db.all<{ rowid: number; data: string }[]>('SELECT last_insert_rowid() as rowid;');
+      return { ...workout, id: results[0].rowid };
     },
   },
 };

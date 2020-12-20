@@ -10,9 +10,9 @@ function Set(props: {
   return (
     <div>
       reps:
-      <input type='number' value={props.reps} onChange={props.changeReps} />
+      <input type='number' value={props.reps.toString()} onChange={props.changeReps} />
       weight:
-      <input type='number' value={props.weight} onChange={props.changeWeight} />
+      <input type='number' value={props.weight.toString()} onChange={props.changeWeight} />
       <button onClick={props.deleteSet}>Delete</button>
     </div>
   );

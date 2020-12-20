@@ -1,38 +1,78 @@
-import React from 'react';
-import { gql, useQuery } from '@apollo/client';
+import React, { useEffect, useState } from 'react';
+import { gql, useApolloClient, useQuery } from '@apollo/client';
+import { List, ListItem } from '@material-ui/core';
+import { NavLink } from 'react-router-dom';
+
+class NavLinkMui extends React.Component<any> {
+  render() {
+    const { forwardedRef, to, ...props } = this.props;
+    return <NavLink {...props} ref={forwardedRef} to={to} />;
+  }
+}
+
+interface WorkoutItem {
+  id: string;
+  date: number;
+}
+
+interface WorkoutsState {
+  workouts: WorkoutItem[];
+}
 
 const FIND_WORKOUTS = gql`
   query FindWorkouts {
     workouts {
       id
       date
-      exercises {
-        name
-        sets {
-          reps
-          weight
-        }
-      }
+    }
+  }
+`;
+
+const CREATE_WORKOUT = gql`
+  mutation CreateWorkout {
+    createWorkout {
+      id
+      date
     }
   }
 `;
 
 export const Workouts: React.FunctionComponent = () => {
-  const { loading, error, data } = useQuery(FIND_WORKOUTS);
+  const [state, setState] = useState<WorkoutsState>({ workouts: [] });
+  const client = useApolloClient();
 
-  if (loading) return <p>Loading...</p>;
-  if (error) return <p>Error :(</p>;
+  useEffect(() => {
+    client
+      .query({ query: FIND_WORKOUTS })
+      .then(({ data }) => setState(data))
+      .catch((error) => console.log(error));
+  }, []);
 
-  return data.workouts.map((w) => {
+  function appendExercise() {
+    client
+      .mutate({ mutation: CREATE_WORKOUT })
+      .then(({ data }) => {
+        const workouts = [...state.workouts];
+        workouts.push({ id: data.createWorkout.id, date: data.createWorkout.date });
+        const newState = { ...state };
+        newState.workouts = workouts;
+        setState(newState);
+      })
+      .catch((error) => console.log(error));
+  }
+
+  const workouts = state.workouts.map((w) => {
     return (
-      <div key={w.id}>
-        {new Date(w.date).toISOString()}
-        <div>
-          {w.exercises.map((ex) => (
-            <p key={ex.name}>{ex.name}</p>
-          ))}
-        </div>
-      </div>
+      <ListItem key={w.id} button component={NavLinkMui} to={'/workout/' + w.id}>
+        {new Date(w.date * 1000).toLocaleString()}
+      </ListItem>
     );
   });
+
+  return (
+    <>
+      <button onClick={appendExercise}>Append exercise</button>
+      <List>{workouts}</List>
+    </>
+  );
 };

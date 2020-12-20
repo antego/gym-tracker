@@ -21,7 +21,7 @@ interface WorkoutState {
 }
 
 const GET_WORKOUT = gql`
-  query GetWorkout($id: ID!) {
+  query GetWorkout($id: String!) {
     workout(id: $id) {
       id
       date
@@ -33,6 +33,12 @@ const GET_WORKOUT = gql`
         }
       }
     }
+  }
+`;
+
+const UPDATE_WORKOUT = gql`
+  mutation UpdateWorkout($workout: WorkoutInput!) {
+    updateWorkout(workout: $workout)
   }
 `;
 
@@ -61,6 +67,24 @@ function mapWorkout(workout: any): WorkoutState {
   };
 }
 
+function mapWorkoutState(state: WorkoutState, id: string): any {
+  const exercises = Array.from(state.exercises.values()).map((e) => {
+    return {
+      name: e.name,
+      sets: Array.from(e.sets.values()).map((s) => {
+        return {
+          reps: !Number.isInteger(s.reps) ? 0 : s.reps,
+          weight: !Number.isInteger(s.weight) ? 0 : s.weight,
+        };
+      }),
+    };
+  });
+  return {
+    exercises,
+    id,
+  };
+}
+
 export const Workout: React.FunctionComponent = () => {
   const { id } = useParams<{ id: string }>();
   const client = useApolloClient();
@@ -71,6 +95,13 @@ export const Workout: React.FunctionComponent = () => {
       setState(mapWorkout(data.workout));
     });
   }, []);
+
+  const saveWorkout = () => {
+    const workout = mapWorkoutState(state, id);
+    client.mutate({ mutation: UPDATE_WORKOUT, variables: { workout } }).catch((error) => {
+      console.log(error);
+    });
+  };
 
   const appendSet = (k: number) => {
     return () => {
@@ -142,6 +173,7 @@ export const Workout: React.FunctionComponent = () => {
     <div>
       {createExercises()}
       <button onClick={appendExercise}>Append exercise</button>
+      <button onClick={saveWorkout}>Save workout</button>
     </div>
   );
 };

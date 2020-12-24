@@ -63,6 +63,7 @@ const typeDefs = gql`
   type Mutation {
     updateWorkout(workout: WorkoutInput!): Boolean
     createWorkout: Workout!
+    deleteWorkout(id: String!): Boolean
   }
 `;
 
@@ -179,6 +180,11 @@ const resolvers = {
       };
       const results = await db.query('insert into workout(data) values ($1) RETURNING id;', [workout]);
       return { ...workout, id: results.rows[0].id };
+    },
+    deleteWorkout: async (parent, args, context) => {
+      const db = context.db;
+      const id = args.id;
+      await db.query('delete from workout where id = $1', [id]);
     },
   },
 };

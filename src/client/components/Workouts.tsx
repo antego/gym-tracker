@@ -41,11 +41,17 @@ const CREATE_WORKOUT = gql`
   }
 `;
 
+const DELETE_WORKOUT = gql`
+  mutation DeleteWorkout($id: String!) {
+    deleteWorkout(id: $id)
+  }
+`;
+
 export const Workouts: React.FunctionComponent = () => {
   const [state, setState] = useState<WorkoutsState>({ workouts: [] });
   const client = useApolloClient();
 
-  function mapExercises(data): WorkoutsState {
+  function mapWorkouts(data): WorkoutsState {
     const workouts: WorkoutItem[] = data.workouts.map((w) => {
       return {
         id: w.id,
@@ -59,11 +65,11 @@ export const Workouts: React.FunctionComponent = () => {
   useEffect(() => {
     client
       .query({ query: FIND_WORKOUTS })
-      .then(({ data }) => setState(mapExercises(data)))
+      .then(({ data }) => setState(mapWorkouts(data)))
       .catch((error) => console.log(error));
   }, []);
 
-  function appendExercise() {
+  function createWorkout() {
     client
       .mutate({ mutation: CREATE_WORKOUT })
       .then(({ data }) => {
@@ -76,6 +82,17 @@ export const Workouts: React.FunctionComponent = () => {
       .catch((error) => console.log(error));
   }
 
+  function deleteWorkout(id: string): () => void {
+    return () => {
+      const idx = state.workouts.findIndex((i) => i.id === id);
+      client.mutate({ mutation: DELETE_WORKOUT, variables: { id } }).catch((error) => console.log(error));
+      setState((newState) => {
+        newState.workouts.splice(idx, 1);
+        return { ...newState };
+      });
+    };
+  }
+
   const workouts = state.workouts.map((w) => {
     const workoutTitle = new Date(w.date * 1000).toLocaleString() + ' ' + w.exerciseNumber;
     return (
@@ -83,14 +100,14 @@ export const Workouts: React.FunctionComponent = () => {
         <ListItem button component={NavLinkMui} to={'/workout/' + w.id}>
           {workoutTitle}
         </ListItem>
-        <button>delete workout</button>
+        <button onClick={deleteWorkout(w.id)}>Delete workout</button>
       </div>
     );
   });
 
   return (
     <>
-      <button onClick={appendExercise}>Append exercise</button>
+      <button onClick={createWorkout}>Create workout</button>
       <List>{workouts}</List>
     </>
   );

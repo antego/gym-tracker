@@ -115,6 +115,30 @@ const workouts = [
   },
 ];
 
+async function migrate(client: Client, migrations: { key: string; migration: string }[]) {
+  await client.query('create table if not exists changelog (id text primary key, data json)');
+  let foundUnaplied = false;
+  let appliedNumber = 0;
+  for (const m of migrations) {
+    const result = await client.query('select id, data from changelog where id = $1', [m.key + '_migration']);
+    if (result.rows.length === 1) {
+      if (foundUnaplied) {
+        console.warn(`Migration ${m.key} goes after unaplied migrations but was already applied.`);
+      }
+      continue;
+    } else if (result.rows.length === 0) {
+      foundUnaplied = true;
+      const date = Date.now();
+      await client.query(m.migration);
+      await client.query('insert into changelog (id, data) values ($1, $2)', [m.key + '_migration', { date }]);
+      appliedNumber++;
+    } else {
+      console.error(`Got more than applied migrations for key ${m.key}`);
+    }
+  }
+  console.info(`MIGRATOR: applied ${appliedNumber} migrations`);
+}
+
 const resolvers = {
   Query: {
     workouts: async (parent, args, context) => {
@@ -173,10 +197,16 @@ const resolvers = {
 
   client.connect();
 
-  await client.query('CREATE TABLE if not exists workout (id SERIAL, data json)');
-  workouts.forEach(async (val) => {
-    await client.query('INSERT INTO workout(data) VALUES ($1)', [val]);
-  });
+  migrate(client, [
+    {
+      key: 'create-workout-table',
+      migration: 'CREATE TABLE if not exists workout (id SERIAL, data json)',
+    },
+    {
+      key: 'insert-some-data',
+      migration: `INSERT INTO workout(data) VALUES (\'${workouts.map((w) => JSON.stringify(w)).join("'), ('")}\')`,
+    },
+  ]);
 
   const server = new ApolloServer({
     typeDefs,

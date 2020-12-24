@@ -25,7 +25,7 @@ git push -u origin master
 
 Run postgres 12. Same version as on heroku
 ```bash
-docker run --name some-postgres -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword -d postgres:12
+docker run --name some-postgres -p 5432:5432 --rm -e POSTGRES_PASSWORD=mysecretpassword -d postgres:12
 # stop:
 docker stop some-postgres
 # start again:

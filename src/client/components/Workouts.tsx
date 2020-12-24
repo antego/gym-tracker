@@ -13,6 +13,7 @@ class NavLinkMui extends React.Component<any> {
 interface WorkoutItem {
   id: string;
   date: number;
+  exerciseNumber: number;
 }
 
 interface WorkoutsState {
@@ -24,6 +25,9 @@ const FIND_WORKOUTS = gql`
     workouts {
       id
       date
+      exercises {
+        name
+      }
     }
   }
 `;
@@ -41,10 +45,21 @@ export const Workouts: React.FunctionComponent = () => {
   const [state, setState] = useState<WorkoutsState>({ workouts: [] });
   const client = useApolloClient();
 
+  function mapExercises(data): WorkoutsState {
+    const workouts: WorkoutItem[] = data.workouts.map((w) => {
+      return {
+        id: w.id,
+        date: w.date,
+        exerciseNumber: w.exercises.length,
+      };
+    });
+    return { workouts };
+  }
+
   useEffect(() => {
     client
       .query({ query: FIND_WORKOUTS })
-      .then(({ data }) => setState(data))
+      .then(({ data }) => setState(mapExercises(data)))
       .catch((error) => console.log(error));
   }, []);
 
@@ -53,7 +68,7 @@ export const Workouts: React.FunctionComponent = () => {
       .mutate({ mutation: CREATE_WORKOUT })
       .then(({ data }) => {
         const workouts = [...state.workouts];
-        workouts.push({ id: data.createWorkout.id, date: data.createWorkout.date });
+        workouts.push({ id: data.createWorkout.id, date: data.createWorkout.date, exerciseNumber: 0 });
         const newState = { ...state };
         newState.workouts = workouts;
         setState(newState);
@@ -62,10 +77,14 @@ export const Workouts: React.FunctionComponent = () => {
   }
 
   const workouts = state.workouts.map((w) => {
+    const workoutTitle = new Date(w.date * 1000).toLocaleString() + ' ' + w.exerciseNumber;
     return (
-      <ListItem key={w.id} button component={NavLinkMui} to={'/workout/' + w.id}>
-        {new Date(w.date * 1000).toLocaleString()}
-      </ListItem>
+      <div key={w.id}>
+        <ListItem button component={NavLinkMui} to={'/workout/' + w.id}>
+          {workoutTitle}
+        </ListItem>
+        <button>delete workout</button>
+      </div>
     );
   });
 

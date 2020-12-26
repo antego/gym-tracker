@@ -13,7 +13,23 @@ import { UsersList } from './components/UsersList';
 import { Workouts } from './components/Workouts';
 import { Workout } from './components/Workout';
 import { ApolloProvider } from '@apollo/client';
-import { ApolloClient, InMemoryCache } from '@apollo/client';
+import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client';
+import { setContext } from '@apollo/client/link/context';
+import Amplify, { Auth } from 'aws-amplify';
+import { withAuthenticator } from '@aws-amplify/ui-react';
+
+Amplify.configure({
+  Auth: {
+    // REQUIRED - Amazon Cognito Region
+    region: 'us-east-1',
+
+    // OPTIONAL - Amazon Cognito User Pool ID
+    userPoolId: 'us-east-1_G18pbuB1j',
+
+    // OPTIONAL - Amazon Cognito Web Client ID (26-char alphanumeric string)
+    userPoolWebClientId: '7smtj4htk4a090tk9hdalmobgq',
+  },
+});
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -28,12 +44,37 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const client = new ApolloClient({
+const httpLink = createHttpLink({
   uri: '/data',
+});
+
+const authLink = setContext((_, { headers }) => {
+  return Auth.currentSession()
+    .then((session) => {
+      const accessToken = session.getAccessToken();
+      const jwt = accessToken.getJwtToken();
+      console.log(`Token: ${JSON.stringify(accessToken)}`);
+      console.log(`Jwt: ${jwt}`);
+      // return the headers to the context so httpLink can read them
+      return {
+        headers: {
+          ...headers,
+          authorization: `Bearer ${jwt}`,
+        },
+      };
+    })
+    .catch((e) => {
+      console.error(e);
+      headers;
+    });
+});
+
+const client = new ApolloClient({
+  link: authLink.concat(httpLink),
   cache: new InMemoryCache(),
 });
 
-export const App = () => {
+const App = () => {
   const classes = useStyles({});
 
   return (
@@ -61,3 +102,5 @@ export const App = () => {
     </ApolloProvider>
   );
 };
+
+export default withAuthenticator(App);

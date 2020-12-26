@@ -24,7 +24,7 @@ const config: Configuration = {
     publicPath: '/statics/',
   },
   resolve: {
-    extensions: ['.js', '.ts', '.tsx'],
+    extensions: ['.mjs', '.js', '.ts', '.tsx'],
   },
   optimization: {
     minimize: !IS_DEV,

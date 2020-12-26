@@ -4,8 +4,9 @@ import { apiRouter } from './routes/api-router';
 import { pagesRouter } from './routes/pages-router';
 import { staticsRouter } from './routes/statics-router';
 import * as config from './config';
-import { ApolloServer, gql } from 'apollo-server-express';
+import { ApolloServer, AuthenticationError, gql } from 'apollo-server-express';
 import { Client } from 'pg';
+import { validateToken } from './validateToken';
 
 console.log(`*******************************************`);
 console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
@@ -217,7 +218,19 @@ const resolvers = {
   const server = new ApolloServer({
     typeDefs,
     resolvers,
-    context: { db: client },
+    context: async ({ req }) => {
+      const header = req.headers.authorization;
+      if (!header) {
+        throw new AuthenticationError('you must be logged in');
+      } else {
+        const userData = await validateToken({ token: header.replace(/^Bearer\ /, '') });
+        console.log(userData);
+        if (userData.isValid !== true) {
+          throw new AuthenticationError('invalid token');
+        }
+        return { db: client, userData };
+      }
+    },
   });
 
   server.applyMiddleware({ app, path: '/data' });

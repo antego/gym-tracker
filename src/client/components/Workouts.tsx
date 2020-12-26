@@ -84,8 +84,8 @@ export const Workouts: React.FunctionComponent = () => {
 
   function deleteWorkout(id: string): () => void {
     return () => {
-      const idx = state.workouts.findIndex((i) => i.id === id);
       client.mutate({ mutation: DELETE_WORKOUT, variables: { id } }).catch((error) => console.log(error));
+      const idx = state.workouts.findIndex((i) => i.id === id);
       setState((newState) => {
         newState.workouts.splice(idx, 1);
         return { ...newState };

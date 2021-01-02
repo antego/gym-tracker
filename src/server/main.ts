@@ -7,6 +7,7 @@ import * as config from './config';
 import { ApolloServer, AuthenticationError, gql } from 'apollo-server-express';
 import { Client } from 'pg';
 import { validateToken } from './validateToken';
+import { createProxyMiddleware, Filter, Options, RequestHandler } from 'http-proxy-middleware';
 
 console.log(`*******************************************`);
 console.log(`NODE_ENV: ${process.env.NODE_ENV}`);

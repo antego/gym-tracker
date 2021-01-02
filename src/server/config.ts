@@ -19,4 +19,7 @@ const SERVER_PORT = process.env.PORT || 3000;
 const WEBPACK_PORT = 8085; // For dev environment only
 const POSTGRES_URL = process.env.DATABASE_URL;
 
-export { IS_DEV, VERSION, SERVER_PORT, WEBPACK_PORT, POSTGRES_URL };
+const COGNITO_URL = IS_DEV
+  ? 'http://localhost:9229/'
+  : 'https://cognito-idp.us-east-1.amazonaws.com/us-east-1_G18pbuB1j';
+export { IS_DEV, VERSION, SERVER_PORT, WEBPACK_PORT, POSTGRES_URL, COGNITO_URL };

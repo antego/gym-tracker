@@ -1,0 +1,30 @@
+{
+  "Users": {
+    "f9fd217f-bfcf-4c63-a7b1-39f9df3b0000": {
+      "Attributes": [
+        {
+          "Name": "sub",
+          "Value": "f9fd217f-bfcf-4c63-a7b1-39f9df3b0000"
+        },
+        {
+          "Name": "email",
+          "Value": "test_user@mail.com"
+        }
+      ],
+      "Enabled": true,
+      "Password": "12345",
+      "UserCreateDate": 1609629285844,
+      "UserLastModifiedDate": 1609629285844,
+      "UserStatus": "UNCONFIRMED",
+      "Username": "f9fd217f-bfcf-4c63-a7b1-39f9df3b0000",
+      "ConfirmationCode": "5103"
+    }
+  },
+  "Options": {
+    "Id": "local",
+    "UsernameAttributes": [
+      "email",
+      "email"
+    ]
+  }
+}

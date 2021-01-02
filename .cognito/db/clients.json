@@ -1,0 +1,13 @@
+{
+  "Clients": {
+    "7smtj4htk4a090tk9hdalmobgq": {
+      "ClientId": "7smtj4htk4a090tk9hdalmobgq",
+      "CreationDate": 1609627544525,
+      "ClientName": "local",
+      "UserPoolId": "local",
+      "LastModifiedDate": 1609627544525,
+      "AllowedOAuthFlowsUserPoolClient": false,
+      "RefreshTokenValidity": 30
+    }
+  }
+}

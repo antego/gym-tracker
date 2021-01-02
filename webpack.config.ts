@@ -1,11 +1,14 @@
 import path from 'path';
-import { Configuration } from 'webpack';
+import { Configuration, DefinePlugin } from 'webpack';
 import ManifestPlugin from 'webpack-manifest-plugin';
 import cssnano from 'cssnano';
 
-import { SERVER_PORT, IS_DEV, WEBPACK_PORT } from './src/server/config';
+import { SERVER_PORT, IS_DEV, WEBPACK_PORT, COGNITO_URL } from './src/server/config';
 
-const plugins = [new ManifestPlugin()];
+const plugins = [
+  new ManifestPlugin(),
+  new DefinePlugin({ COGNITO_URL: JSON.stringify(COGNITO_URL), IS_DEV: JSON.stringify(IS_DEV) }),
+];
 
 // import { BundleAnalyzerPlugin } from 'webpack-bundle-analyzer';
 // plugins.push(new BundleAnalyzerPlugin());

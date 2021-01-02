@@ -32,6 +32,13 @@ docker stop some-postgres
 docker start some-postgres
 ```
 
+## Local cognito
+Create client
+```
+curl -XPOST -H 'x-amz-target: ololo.CreateUserPoolClient' -d '{"ClientName": "gymstats",    "UserPoolId": "local"}' 'http://127.0.0.1:9229?action=CreateUserPoolClient'
+```
+Set client id in the .cognito/db/clients to the production id
+
 ## Why
 
 - **Simple** to jump into, **Fast** because it is simple.

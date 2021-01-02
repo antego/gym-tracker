@@ -18,17 +18,23 @@ import { setContext } from '@apollo/client/link/context';
 import Amplify, { Auth } from 'aws-amplify';
 import { withAuthenticator } from '@aws-amplify/ui-react';
 
+declare let COGNITO_URL: string;
+declare let IS_DEV: boolean;
+
+const authConfig = {
+  // REQUIRED - Amazon Cognito Region
+  region: 'us-east-1',
+
+  // OPTIONAL - Amazon Cognito User Pool ID
+  userPoolId: 'us-east-1_G18pbuB1j',
+
+  // OPTIONAL - Amazon Cognito Web Client ID (26-char alphanumeric string)
+  userPoolWebClientId: '7smtj4htk4a090tk9hdalmobgq',
+  endpoint: COGNITO_URL,
+  authenticationFlowType: IS_DEV ? 'USER_PASSWORD_AUTH' : 'USER_SRP_AUTH',
+};
 Amplify.configure({
-  Auth: {
-    // REQUIRED - Amazon Cognito Region
-    region: 'us-east-1',
-
-    // OPTIONAL - Amazon Cognito User Pool ID
-    userPoolId: 'us-east-1_G18pbuB1j',
-
-    // OPTIONAL - Amazon Cognito Web Client ID (26-char alphanumeric string)
-    userPoolWebClientId: '7smtj4htk4a090tk9hdalmobgq',
-  },
+  Auth: authConfig,
 });
 
 const useStyles = makeStyles((theme: Theme) =>

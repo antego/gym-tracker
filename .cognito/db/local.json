@@ -18,6 +18,21 @@
       "UserStatus": "UNCONFIRMED",
       "Username": "f9fd217f-bfcf-4c63-a7b1-39f9df3b0000",
       "ConfirmationCode": "5103"
+    },
+    "84830db3-09ee-4f9e-95a6-2896952e7c97": {
+      "Attributes": [
+        {
+          "Name": "sub",
+          "Value": "84830db3-09ee-4f9e-95a6-2896952e7c97"
+        }
+      ],
+      "Enabled": true,
+      "Password": "123456",
+      "UserCreateDate": 1609755575543,
+      "UserLastModifiedDate": 1609755575543,
+      "UserStatus": "UNCONFIRMED",
+      "Username": "84830db3-09ee-4f9e-95a6-2896952e7c97",
+      "ConfirmationCode": "2399"
     }
   },
   "Options": {

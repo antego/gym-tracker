@@ -1,13 +1,12 @@
 import express from 'express';
 import path from 'path';
-import { apiRouter } from './routes/api-router';
 import { pagesRouter } from './routes/pages-router';
 import { staticsRouter } from './routes/statics-router';
 import * as config from './config';
 import { ApolloServer, AuthenticationError, gql } from 'apollo-server-express';
 import { Client } from 'pg';
-import { validateToken } from './validateToken';
-import { createProxyMiddleware, Filter, Options, RequestHandler } from 'http-proxy-middleware';
+import { ClaimVerifyResult, validateToken } from './validateToken';
+import * as workoutService from './workoutService';
 
 console.log(`*******************************************`);
 console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
@@ -69,55 +68,6 @@ const typeDefs = gql`
   }
 `;
 
-const workouts = [
-  {
-    date: 5678,
-    exercises: [
-      {
-        name: 'bench press',
-        sets: [
-          {
-            weight: 12,
-            reps: 13,
-          },
-        ],
-      },
-      {
-        name: 'push-up',
-        sets: [
-          {
-            reps: 10,
-            weight: 0,
-          },
-        ],
-      },
-    ],
-  },
-  {
-    date: 1234,
-    exercises: [
-      {
-        name: 'bench press',
-        sets: [
-          {
-            weight: 12,
-            reps: 13,
-          },
-        ],
-      },
-      {
-        name: 'push-up',
-        sets: [
-          {
-            reps: 10,
-            weight: 0,
-          },
-        ],
-      },
-    ],
-  },
-];
-
 async function migrate(client: Client, migrations: { key: string; migration: string }[]) {
   await client.query('create table if not exists changelog (id text primary key, data json)');
   let foundUnaplied = false;
@@ -142,51 +92,29 @@ async function migrate(client: Client, migrations: { key: string; migration: str
   console.info(`MIGRATOR: applied ${appliedNumber} migrations`);
 }
 
+interface Context {
+  db: Client;
+  userData: ClaimVerifyResult;
+}
+
 const resolvers = {
   Query: {
-    workouts: async (parent, args, context) => {
-      const db = context.db;
-      const results = await db.query('SELECT id, data FROM workout limit 10');
-      return results.rows.map((result) => {
-        const workout = result.data;
-        workout.id = result.id;
-        return workout;
-      });
+    workouts: async (parent, args, context: Context) => {
+      return workoutService.findWorkouts(context.db, context.userData.userId);
     },
-    workout: async (parent, args, context) => {
-      const db = context.db;
-      const results = await db.query('SELECT id, data FROM workout where id = $1', [args.id]);
-      if (results.length != 0) {
-        const result = results.rows[0];
-        const workout = result.data;
-        workout.id = result.id;
-        return workout;
-      }
-      return null;
+    workout: async (parent, args, context: Context) => {
+      return workoutService.getWorkout(context.db, context.userData.userId, args.id);
     },
   },
   Mutation: {
-    updateWorkout: async (parent, args, context) => {
-      const db = context.db;
-      const date = Math.floor(Date.now() / 1000);
-      const workout = args.workout;
-      workout.date = date;
-      await db.query('UPDATE workout set data = $1 where id = $2', [workout, workout.id]);
+    updateWorkout: async (parent, args, context: Context) => {
+      return workoutService.updateWorkout(context.db, context.userData.userId, args.workout);
     },
-    createWorkout: async (parent, args, context) => {
-      const db = context.db;
-      const date = Math.floor(Date.now() / 1000);
-      const workout = {
-        date,
-        exercises: [],
-      };
-      const results = await db.query('insert into workout(data) values ($1) RETURNING id;', [workout]);
-      return { ...workout, id: results.rows[0].id };
+    createWorkout: async (parent, args, context: Context) => {
+      return workoutService.createWorkout(context.db, context.userData.userId);
     },
-    deleteWorkout: async (parent, args, context) => {
-      const db = context.db;
-      const id = args.id;
-      await db.query('delete from workout where id = $1', [id]);
+    deleteWorkout: async (parent, args, context: Context) => {
+      return workoutService.deleteWorkout(context.db, context.userData.userId, args.id);
     },
   },
 };
@@ -208,11 +136,8 @@ const resolvers = {
   migrate(client, [
     {
       key: 'create-workout-table',
-      migration: 'CREATE TABLE if not exists workout (id SERIAL, data json)',
-    },
-    {
-      key: 'insert-some-data',
-      migration: `INSERT INTO workout(data) VALUES (\'${workouts.map((w) => JSON.stringify(w)).join("'), ('")}\')`,
+      migration:
+        'CREATE TABLE if not exists workout (id SERIAL, "user" text not null, data json); create index user_idx on workout ("user");',
     },
   ]);
 
@@ -237,7 +162,6 @@ const resolvers = {
   server.applyMiddleware({ app, path: '/data' });
 
   app.use('/assets', express.static(path.join(process.cwd(), 'assets')));
-  app.use(apiRouter());
   app.use(staticsRouter());
   app.use(pagesRouter());
 

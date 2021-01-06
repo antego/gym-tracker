@@ -8,7 +8,7 @@ export interface ClaimVerifyRequest {
 }
 
 export interface ClaimVerifyResult {
-  readonly userName: string;
+  readonly userId: string;
   readonly clientId: string;
   readonly isValid: boolean;
   readonly error?: any;
@@ -92,9 +92,9 @@ const validateToken = async (request: ClaimVerifyRequest): Promise<ClaimVerifyRe
       throw new Error('claim use is not access');
     }
     console.log(`claim confirmed for ${claim.username}`);
-    result = { userName: claim.username, clientId: claim.client_id, isValid: true };
+    result = { userId: claim.username, clientId: claim.client_id, isValid: true };
   } catch (error) {
-    result = { userName: '', clientId: '', error, isValid: false };
+    result = { userId: '', clientId: '', error, isValid: false };
   }
   return result;
 };

@@ -9,14 +9,13 @@ import { Usage } from './components/Usage';
 import { LazyLoadingExample } from './components/LazyLoadingExample';
 import { RouterExample } from './components/RouterExample';
 import { StyledComponentsExample } from './components/StyledComponentsExample';
-import { UsersList } from './components/UsersList';
 import { Workouts } from './components/Workouts';
 import { Workout } from './components/Workout';
 import { ApolloProvider } from '@apollo/client';
 import { ApolloClient, createHttpLink, InMemoryCache } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import Amplify, { Auth } from 'aws-amplify';
-import { withAuthenticator } from '@aws-amplify/ui-react';
+import { AmplifyAuthenticator, AmplifySignUp } from '@aws-amplify/ui-react';
 
 declare let COGNITO_URL: string;
 declare let IS_DEV: boolean;
@@ -95,7 +94,6 @@ const App = () => {
             <Switch>
               <Route exact path='/' component={Home} />
               <Route exact path='/usage' component={Usage} />
-              <Route path='/fetch-example' component={UsersList} />
               <Route path='/lazy-example' component={LazyLoadingExample} />
               <Route path='/styled-example' component={StyledComponentsExample} />
               <Route path='/router-example/:slug' component={RouterExample} />
@@ -109,4 +107,21 @@ const App = () => {
   );
 };
 
-export default withAuthenticator(App);
+const AuthenticatedApp = () => {
+  return (
+    <AmplifyAuthenticator usernameAlias='email'>
+      <AmplifySignUp
+        slot='sign-up'
+        formFields={[
+          { type: 'username', label: 'Email Address', placeholder: 'Enter your email address' },
+          {
+            type: 'password',
+          },
+        ]}
+      />
+      <App />
+    </AmplifyAuthenticator>
+  );
+};
+
+export default AuthenticatedApp;

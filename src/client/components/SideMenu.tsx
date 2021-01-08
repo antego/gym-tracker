@@ -1,4 +1,4 @@
-import { Divider, Drawer, List, ListItem, ListItemIcon, ListItemText, makeStyles } from '@material-ui/core';
+import { Divider, Drawer, List, ListItem, ListItemIcon, ListItemText, makeStyles, IconButton } from '@material-ui/core';
 import { createStyles, Theme } from '@material-ui/core/styles';
 import UsageIcon from '@material-ui/icons/Code';
 import HomeIcon from '@material-ui/icons/Home';
@@ -8,6 +8,7 @@ import StyledIcon from '@material-ui/icons/Style';
 import LazyIcon from '@material-ui/icons/SystemUpdateAlt';
 import React from 'react';
 import { NavLink } from 'react-router-dom';
+import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 
 class NavLinkMui extends React.Component<any> {
   render() {
@@ -31,16 +32,25 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export const SideMenu: React.FunctionComponent = () => {
+type Props = {
+  isOpen: boolean;
+  closeDrawer: () => void;
+};
+
+export const SideMenu: React.FunctionComponent<Props> = ({ isOpen, closeDrawer }) => {
   const classes = useStyles({});
   return (
     <Drawer
       className={classes.drawer}
-      variant='permanent'
+      variant='temporary'
+      open={isOpen}
       classes={{
         paper: classes.drawerPaper,
       }}
     >
+      <IconButton onClick={closeDrawer}>
+        <ChevronLeftIcon />
+      </IconButton>
       <div className={classes.toolbar} />
       <List>
         <ListItem button component={NavLinkMui} to='/'>

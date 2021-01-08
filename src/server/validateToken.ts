@@ -2,6 +2,7 @@ import { promisify } from 'util';
 import * as Axios from 'axios';
 import * as jsonwebtoken from 'jsonwebtoken';
 import jwkToPem = require('jwk-to-pem');
+import * as config from './config';
 
 export interface ClaimVerifyRequest {
   readonly token?: string;
@@ -44,7 +45,9 @@ const cognitoPoolId = 'us-east-1_G18pbuB1j';
 if (!cognitoPoolId) {
   throw new Error('env var required for cognito pool');
 }
-const cognitoIssuer = `https://cognito-idp.us-east-1.amazonaws.com/${cognitoPoolId}`;
+const cognitoIssuer = config.IS_DEV
+  ? config.COGNITO_POOL_URL
+  : `https://cognito-idp.us-east-1.amazonaws.com/${cognitoPoolId}`;
 
 let cacheKeys: Map<string, PublicKeyMeta> | undefined;
 const getPublicKeys = async (): Promise<Map<string, PublicKeyMeta>> => {
@@ -82,6 +85,7 @@ const validateToken = async (request: ClaimVerifyRequest): Promise<ClaimVerifyRe
     }
     const claim = (await verifyPromised(token, key.pem)) as Claim;
     const currentSeconds = Math.floor(new Date().valueOf() / 1000);
+    console.log(claim, currentSeconds);
     if (currentSeconds > claim.exp || currentSeconds < claim.auth_time) {
       throw new Error('claim is expired or invalid');
     }

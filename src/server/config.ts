@@ -22,4 +22,5 @@ const POSTGRES_URL = process.env.DATABASE_URL;
 const COGNITO_URL = IS_DEV
   ? 'http://localhost:9229/'
   : 'https://cognito-idp.us-east-1.amazonaws.com/us-east-1_G18pbuB1j';
-export { IS_DEV, VERSION, SERVER_PORT, WEBPACK_PORT, POSTGRES_URL, COGNITO_URL };
+const COGNITO_POOL_URL = 'http://localhost:9229/local';
+export { IS_DEV, VERSION, SERVER_PORT, WEBPACK_PORT, POSTGRES_URL, COGNITO_URL, COGNITO_POOL_URL };

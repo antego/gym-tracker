@@ -81,14 +81,15 @@ const client = new ApolloClient({
 
 const App = () => {
   const classes = useStyles({});
+  const [open, setOpen] = React.useState(false);
 
   return (
     <ApolloProvider client={client}>
       <BrowserRouter>
         <div className={classes.root}>
           <CssBaseline />
-          <Header />
-          <SideMenu />
+          <Header toggleSideMenu={() => setOpen(true)} />
+          <SideMenu isOpen={open} closeDrawer={() => setOpen(false)} />
           <main className={classes.main}>
             <div className={classes.toolbar} />
             <Switch>
